@@ -1,0 +1,18 @@
+library(tools)
+
+getwd()
+VLP50_data <- read.csv(file = "VLP50.csv")
+
+
+x<-VLP50_data$ql
+y <-VLP50_data$pwf
+
+#regresi
+plot(x,y,xlab="Ql", ylab = "Pwf")
+model1 <-nls(y~alpha*log(x,exp(1))+beta, start =list(alpha=10, beta=10))
+summary(model1)
+nlm_fn <- predict(model1, newdata=VLP50_data$ql)
+lines(VLP50_data$ql, nlm_fn, col=6, lty=2)
+
+coef <-coef(model1)
+
