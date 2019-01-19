@@ -8,6 +8,7 @@ q_o1 <- 500
 pwf1 <- 2000
 q_o2 <- 685
 pwf2 <- 1500
+pwf2
 
 
 vogel_eqs <- function(z) {
