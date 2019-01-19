@@ -62,49 +62,139 @@ y1<- VLP50$pwf
 
 #regresi
 plot(x1,y1,xlab="Ql", ylab = "Pwf")
-model1 <-nls(y1~alpha*log(x1,exp(1))+beta, start =list(alpha=10, beta=10))
-summary(model1)
-nlm_fn1 <- predict(model1, newdata=VLP50$ql)
-lines(VLP50$ql, nlm_fn1, col=6, lty=2)
 
-coef1 <-coef(model1)
+#declared the possibility of model
+#model_optional
+#asumsi alpha -> saat ql ~ 0
+alpha <- 1800
+model1_exponential <- nls(y1 ~ alpha*exp(beta*x1), start = list(alpha=alpha, beta=2*log(2)/alpha))
+model1_logarithmic <- nls (y1~alpha*log(x1,exp(1))+beta, start =list(alpha=alpha, beta=2*log(2)/alpha))
+model1_polynomial1 <- lm(y1~ poly(x1,2))
+model1_power <- nls(y1~alpha*x1^beta, start=list(alpha=alpha, beta=2*log(2)/alpha))
+
+#R squared calculation
+R_exponential <- 1-(deviance(model1_polynomial1)/sum((y1-mean(y1))^2))
+R_logarithmic <- 1-(deviance(model1_logarithmic)/sum((y1-mean(y1))^2))
+R_polynomial1 <- 1-(deviance(model1_polynomial1)/sum((y1-mean(y1))^2))
+R_power <- 1-(deviance(model1_power)/sum((y1-mean(y1))^2))
 
 
-#regresi non linear VLP2
-x2<- VLP75$qL
-y2<- VLP75$pwf
+data_R <-c("R_exponential", "R_logarithmic", "R_polynomial1", "R_power")
+value_R <-c(R_exponential, R_logarithmic, R_polynomial1,R_power)
+df_R <-data.frame(data_R, value_R)
 
-plot(x2,y2,xlab="Ql", ylab = "Pwf")
-model2 <-nls(y2~alpha*log(x2,exp(1))+beta, start =list(alpha=10, beta=10))
-summary(model2)
-nlm_fn2 <- predict(model2, newdata=VLP75$qL)
-lines(VLP75$qL, nlm_fn2, col=6, lty=2)
+best_model <-apply(df_R, 2, function(x) max(x, na.rm = TRUE))
+a<-as.character(best_model[1])
+a
 
-coef2 <-coef(model2)
+#build function for regression with highest R square
+best_regression <- function(x) {
+  if (x == "R_exponential"){
+    nlm_fn1 <-predict(model1_exponential, newdata = VLP50$ql)
+    lines(VLP50$ql, nlm_fn1, col=6, lty=2)
+    coef1 <-coef(model1_exponential)
+    
+    #intersection
+    intersection1 <- function(z) {
+      f <- numeric(2)
+      x1 <- z[1]
+      y1 <- z[2]
+      
+      
+      f[1] <- z1$x[1]*(1-0.2*(y1/z1$x[2])-0.8*(y1/z1$x[2])^2)-x1
+      f[2] <- coef1[1]*exp(coef1[2]*z[1])-z[2]
+      f
+      
+    }
+    
+    zstart1 <- c(100,100)
+    z1_1 <- nleqslv(zstart1,intersection1)
+    
+    x_sect1 <-z1_1$x[1]
+    y_sect1 <-z1_1$x[2]
+    
+    
+  }else if (x =="R_logarithmic"){
+    nlm_fn1 <-predict(model1_logarithmic, newdata = VLP50$ql)
+    lines(VLP50$ql, nlm_fn1, col=6, lty=2)
+    coef1 <-coef(model1_logarithmic)
+    #intersection
+    intersection1 <- function(z) {
+      f <- numeric(2)
+      x1 <- z[1]
+      y1 <- z[2]
+      
+      
+      f[1] <- z1$x[1]*(1-0.2*(y1/z1$x[2])-0.8*(y1/z1$x[2])^2)-x1
+      f[2] <- coef1[1]*log(x1,exp(1))+coef1[2]-y1
+      f
+      
+    }
+    
+    zstart1 <- c(100,100)
+    z1_1 <- nleqslv(zstart1,intersection1)
+    
+    x_sect1 <-z1_1$x[1]
+    y_sect1 <-z1_1$x[2]
+    
+  }else if (x=="R_polynomial1"){
+    nlm_fn1 <-predict(model1_polynomial1)
+    lines(VLP50$ql, nlm_fn1, col=6, lty=2)
+    coef1 <-coef(model1_polynomial1)
+    
+    #intersection
+    intersection1 <- function(z) {
+      f <- numeric(2)
+      x1 <- z[1]
+      y1 <- z[2]
+      
+      
+      f[1] <- z1$x[1]*(1-0.2*(y1/z1$x[2])-0.8*(y1/z1$x[2])^2)-x1
+      f[2] <- coef1[3]*x1^2+coef1[2]*x1+coef1[1]-y1
+      f
+      
+    }
+    
+    zstart1 <- c(100,100)
+    z1_1 <- nleqslv(zstart1,intersection1)
+    
+    x_sect1 <-z1_1$x[1]
+    y_sect1 <-z1_1$x[2]
+    
+    
+  }else {
+    nlm_fn1 <-predict(model1_power, newdata = VLP50$ql)
+    lines(VLP50$ql, nlm_fn1, col=6, lty=2)
+    coef1 <-coef(model1_power)
+    
+    #intersection
+    intersection1 <- function(z) {
+      f <- numeric(2)
+      x1 <- z[1]
+      y1 <- z[2]
+      
+      
+      f[1] <- z1$x[1]*(1-0.2*(y1/z1$x[2])-0.8*(y1/z1$x[2])^2)-x1
+      f[2] <- coef1[1]*x1^coef[2]-y1
+      f
+      
+    }
+    
+    zstart1 <- c(100,100)
+    z1_1 <- nleqslv(zstart1,intersection1)
+    
+    x_sect1 <-z1_1$x[1]
+    y_sect1 <-z1_1$x[2]
+    
+  }
+  
+}
 
-#regresi non linear VLP3
-x3<- VLP100$qL
-y3<- VLP100$pwf
+#input the best regression model type to function of regression
+best_regression(a) 
 
-plot(x3,y3,xlab="Ql", ylab = "Pwf")
-model3 <-nls(y3~alpha*log(x3,exp(1))+beta, start =list(alpha=10, beta=10))
-summary(model3)
-nlm_fn3 <- predict(model3, newdata=VLP100$qL)
-lines(VLP100$qL, nlm_fn3, col=6, lty=2)
 
-coef3 <-coef(model3)
 
-#regresi non linear VLP3
-x4<- VLP200$qL
-y4<- VLP200$pwf
-
-plot(x4,y4,xlab="Ql", ylab = "Pwf")
-model4 <-nls(y4~alpha*log(x4,exp(1))+beta, start =list(alpha=10, beta=10))
-summary(model4)
-nlm_fn4 <- predict(model4, newdata=VLP200$qL)
-lines(VLP200$qL, nlm_fn4, col=6, lty=2)
-
-coef4 <-coef(model4)
 
 #Plot IPR-TPR
 ggplot()+
@@ -117,83 +207,7 @@ ggplot()+
   ylab('Pwf (psi)')
 
 
-#intersection TPR-IPR1
-intersection1 <- function(z) {
-  f <- numeric(2)
-  x1 <- z[1]
-  y1 <- z[2]
-  
-  
-  f[1] <- z1$x[1]*(1-0.2*(y1/z1$x[2])-0.8*(y1/z1$x[2])^2)-x1
-  f[2] <- coef1[1]*log(x1,exp(1))+coef1[2]-y1
-  f
-  
-}
 
-zstart1 <- c(100,100)
-z1_1 <- nleqslv(zstart1,intersection1)
-
-x_sect1 <-z1_1$x[1]
-y_sect1 <-z1_1$x[2]
-
-#intersection TPR-IPR2
-intersection2 <- function(z) {
-  f <- numeric(2)
-  x2 <- z[1]
-  y2 <- z[2]
-  
-  
-  f[1] <- z1$x[1]*(1-0.2*(y2/z1$x[2])-0.8*(y2/z1$x[2])^2)-x2
-  f[2] <- coef2[1]*log(x2,exp(1))+coef2[2]-y2
-  f
-  
-}
-
-zstart2 <- c(100,100)
-z1_2 <- nleqslv(zstart2,intersection2)
-
-x_sect2 <-z1_2$x[1]
-y_sect2 <-z1_2$x[2]
-
-
-#intersection TPR-IPR3
-intersection3 <- function(z) {
-  f <- numeric(2)
-  x3 <- z[1]
-  y3 <- z[2]
-  
-  
-  f[1] <- z1$x[1]*(1-0.2*(y3/z1$x[2])-0.8*(y3/z1$x[2])^2)-x3
-  f[2] <- coef3[1]*log(x3,exp(1))+coef3[2]-y3
-  f
-  
-}
-
-zstart3 <- c(100,100)
-z1_3 <- nleqslv(zstart3,intersection3)
-
-x_sect3 <-z1_3$x[1]
-y_sect3 <-z1_3$x[2]
-
-
-#intersection TPR-IPR4
-intersection4 <- function(z) {
-  f <- numeric(2)
-  x4 <- z[1]
-  y4 <- z[2]
-  
-  
-  f[1] <- z1$x[1]*(1-0.2*(y4/z1$x[2])-0.8*(y4/z1$x[2])^2)-x4
-  f[2] <- coef4[1]*log(x4,exp(1))+coef4[2]-y4
-  f
-  
-}
-
-zstart4 <- c(100,100)
-z1_4 <- nleqslv(zstart4,intersection4)
-
-x_sect4 <-z1_4$x[1]
-y_sect4 <-z1_4$x[2]
 
 G_inj1 <- VLP50$glr[1]
 G_inj2 <- VLP75$GLR[1]
