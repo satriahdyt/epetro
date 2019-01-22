@@ -28,9 +28,10 @@ z1 <- nleqslv(zstart,vogel_eqs)
 
 
 eq = function(x){z1$x[1]*(1-0.2*(x/z1$x[2])-0.8*(x/z1$x[2])^2)}
+pr=z1$x[2]
 x=pr
 
-df1=data.frame(pwf,q_o)
+df1=data.frame(x,eq(x))   #cek lagi niih
 
 for (i in 1:11) {
   
@@ -41,7 +42,7 @@ for (i in 1:11) {
 
 #Plot IPR
 ggplot()+
-  geom_line(data=df1, aes(x=q_o,y=pwf, color="black"))+
+  geom_line(data=df1, aes(x=x,y=eq(x), color="black"))+
   xlab('Q (bfpd)')+
   ylab('Pwf (psi)')
 
@@ -54,6 +55,7 @@ VLP50 <-read.csv(file="VLP50.csv")
 VLP75 <- read.csv(file="VLP75.csv")
 VLP100 <-read.csv(file="VLP100.csv")
 VLP200 <- read.csv(file="VLP200.csv")
+
 
 
 #regresi non linear VLP1
@@ -175,7 +177,7 @@ best_regression <- function(x) {
       
       
       f[1] <- z1$x[1]*(1-0.2*(y1/z1$x[2])-0.8*(y1/z1$x[2])^2)-x1
-      f[2] <- coef1[1]*x1^coef[2]-y1
+      f[2] <- coef1[1]*x1^coef1[2]-y1
       f
       
     }
@@ -187,8 +189,11 @@ best_regression <- function(x) {
     y_sect1 <-z1_1$x[2]
     
   }
-  
+  result<-c(x_sect1,y_sect1)
+  return(result)
 }
+
+
 
 #input the best regression model type to function of regression
 best_regression(a) 
@@ -198,7 +203,7 @@ best_regression(a)
 
 #Plot IPR-TPR
 ggplot()+
-  geom_line(data=df1, aes(x=q_o,y=pwf, color="black"))+
+  geom_line(data=df1, aes(x=eq(x),y=x, color="black"))+
   geom_line(data=VLP50, aes(x=ql,y=pwf, color="yelow"))+
   geom_line(data=VLP75, aes(x=qL,y=pwf, color="red"))+
   geom_line(data=VLP100, aes(x=qL,y=pwf,color="green"))+
@@ -206,7 +211,7 @@ ggplot()+
   xlab('Q (bfpd)')+
   ylab('Pwf (psi)')
 
-
+x_sect1
 
 
 G_inj1 <- VLP50$glr[1]
