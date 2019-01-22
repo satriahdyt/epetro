@@ -2,7 +2,7 @@ library(tools)
 library(nleqslv)
 library(ggplot2)
 library(data.table)
-#Develop IPR Curve1
+#Develop IPR Curve
 
 q_o1 <- 500
 pwf1 <- 2000
